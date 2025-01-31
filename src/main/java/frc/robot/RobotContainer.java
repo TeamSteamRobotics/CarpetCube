@@ -4,13 +4,58 @@
 
 package frc.robot;
 
+//import frc.robot.commands.Shooting.ShootPID;
+
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.ExampleSubsystem;
+/*import frc.robot.commands.BasicAuto;
+import frc.robot.commands.CoordinatePrint;
+import frc.robot.commands.Handoff;
+import frc.robot.commands.SmartShoot;
+import frc.robot.commands.SmartShoot;
+import frc.robot.commands.Auto.DanielTwoNoteTaxi;
+import frc.robot.commands.Auto.JustOneNote;
+import frc.robot.commands.Auto.OneNoteTaxi;
+import frc.robot.commands.Auto.OneNoteWaitTaxi;
+import frc.robot.commands.Auto.ThreeNoteAutoBlue;
+import frc.robot.commands.Auto.ThreeNoteAutoRed;
+import frc.robot.commands.Auto.ZachTwoNote;
+import frc.robot.commands.Auto.ZeroNoteTaxi;
+import frc.robot.commands.Climbing.RaiseClimb;
+import frc.robot.commands.Climbing.RetractClimb;
+import frc.robot.commands.Driving.CenterOnTarget;*/
+import frc.robot.commands.Driving.Drive;
+/*import frc.robot.commands.Intaking.Intake;
+import frc.robot.commands.Intaking.IntakeAnglePID;
+import frc.robot.commands.Intaking.Vomit;
+import frc.robot.commands.Shooting.AdvanceNote;
+import frc.robot.commands.Shooting.AmpHandoff;
+import frc.robot.commands.Shooting.AngleShooterDown;
+import frc.robot.commands.Shooting.AngleShooterPID;
+import frc.robot.commands.Shooting.AngleShooterUp;
+import frc.robot.commands.Shooting.BaseShooter;
+import frc.robot.commands.Shooting.RetreatNote;
+import frc.robot.commands.Shooting.SubwoofShoot;*/
+import frc.robot.subsystems.DriveSubsystem;
+/*import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.ZachVisionSubsystem;
+import frc.robot.subsystems.AprilVisionSubsystem.ReturnTarget;
+import frc.robot.commands.Driving.DriveDistance;
+import frc.robot.commands.Driving.PIDTurn;
+import frc.robot.subsystems.AprilVisionSubsystem;
+import frc.robot.subsystems.ClimbSubsystem;*/
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+/*import frc.robot.commands.Intaking.AmpVomit;
+import frc.robot.commands.Intaking.AngleIntakeDown;
+import frc.robot.commands.Intaking.AngleIntakeUp;
+import frc.robot.commands.Shooting.AmpShoot;*/
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -20,16 +65,72 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+  private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+  /*private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
+  private final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
+  private final ClimbSubsystem m_climbSubsystem = new ClimbSubsystem();
+  private final AprilVisionSubsystem m_aVisionSubsystem = new AprilVisionSubsystem();
+  private final ZachVisionSubsystem m_ZachVisionSubsystem = new ZachVisionSubsystem();*/
 
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController m_driverController =
-      new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  private SendableChooser<Command> m_chooser = new SendableChooser<>();
 
+
+  private final CommandXboxController m_driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  private final CommandXboxController m_operatorController = new CommandXboxController(OperatorConstants.kOperatorControllerPort);
+  private final GenericHID commandHID = new GenericHID(OperatorConstants.kOperatorControllerPort);
+
+  // Driver Controller Bindings:
+  private final Trigger driverRetractClimb = m_driverController.leftBumper();
+  private final Trigger driverRaiseClimb = m_driverController.rightBumper();
+
+  //private final Trigger autoAim = m_driverController.a();
+
+  private final Trigger raiseIntake = m_driverController.povUp();
+  private final Trigger lowerIntake = m_driverController.povDown();
+  private final Trigger resetIntake = m_driverController.a();
+
+  private final Trigger operatorRetractClimb = m_operatorController.axisLessThan(1, -0.5);
+  private final Trigger operatorRaiseClimb = m_operatorController.axisGreaterThan(1, 0.5);
+
+  private final Trigger handoff = m_operatorController.leftBumper();
+  private final Trigger smartShooter = m_operatorController.rightBumper();
+
+  private final Trigger shooterAngleUp = m_operatorController.povUp();
+  private final Trigger shooterAngleDown = m_operatorController.povDown();
+
+  private final Trigger intakeAngleDown = m_operatorController.povLeft();
+  private final Trigger intakeAngleMid = m_operatorController.leftStick();
+  private final Trigger intakeAngleUp = m_operatorController.povRight();
+
+  private final Trigger advanceToShooter = m_operatorController.leftTrigger();
+  private final Trigger runShooter = m_operatorController.rightTrigger();
+  //private final Trigger runShootAnglePID = m_operatorController.y();
+
+  //private final Trigger intake = m_operatorController.a();
+  private final Trigger subwoofShoot = m_operatorController.a();
+  private final Trigger vomit = m_operatorController.x();
+  private final Trigger retreat = m_operatorController.b();
+  private final Trigger ampHandoff = m_operatorController.y();
+  //private final Trigger ampAngle = m_operatorController.rightStick();
+  private final Trigger ampShoot = m_operatorController.rightStick();
+  private final Trigger baseShooter = m_driverController.b(); 
+
+
+  
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    // Configure the trigger bindings
-    configureBindings();
+    m_driveSubsystem.setDefaultCommand(new Drive(m_driveSubsystem, m_driverController::getLeftY, m_driverController::getRightX));
+   /* m_aVisionSubsystem.setDefaultCommand(new CoordinatePrint(m_aVisionSubsystem, 4, ReturnTarget.TARGET));
+    m_chooser.setDefaultOption("Two Note Center", new ZachTwoNote(m_driveSubsystem, m_shooterSubsystem, m_intakeSubsystem, m_aVisionSubsystem));
+    m_chooser.addOption("Three Note Blue", new ThreeNoteAutoBlue(m_driveSubsystem, m_shooterSubsystem, m_intakeSubsystem, m_aVisionSubsystem));
+    m_chooser.addOption("Three Note Red", new ThreeNoteAutoRed(m_driveSubsystem, m_shooterSubsystem, m_intakeSubsystem, m_aVisionSubsystem));
+    m_chooser.addOption("One Note Wait Taxi", new OneNoteWaitTaxi(m_driveSubsystem, m_shooterSubsystem, m_aVisionSubsystem));
+    m_chooser.addOption("Zero Note Taxi", new ZeroNoteTaxi(m_driveSubsystem));
+    m_chooser.addOption("One Note Taxi", new OneNoteTaxi(m_driveSubsystem, m_shooterSubsystem, m_aVisionSubsystem, m_intakeSubsystem));
+    m_chooser.addOption("Just One Note", new JustOneNote(m_shooterSubsystem, m_aVisionSubsystem, m_intakeSubsystem));
+    m_chooser.addOption("Daniel Auto", new DanielTwoNoteTaxi(m_driveSubsystem, m_shooterSubsystem, m_intakeSubsystem, m_aVisionSubsystem));
+    SmartDashboard.putData(m_chooser);
+    configureBindings();*/
   }
 
   /**
@@ -42,22 +143,55 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    new Trigger(m_exampleSubsystem::exampleCondition)
-        .onTrue(new ExampleCommand(m_exampleSubsystem));
+    /*raiseIntake.whileTrue(new AngleIntakeUp(m_intakeSubsystem));
+    lowerIntake.whileTrue(new AngleIntakeDown(m_intakeSubsystem));
+    resetIntake.onTrue(new InstantCommand(() -> m_intakeSubsystem.resetIntakeEncoder()));
 
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release.
-    m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+    driverRetractClimb.whileTrue(new RetractClimb(m_climbSubsystem));
+    driverRaiseClimb.whileTrue(new RaiseClimb(m_climbSubsystem));
+
+    //autoAim.onTrue(new CenterOnTarget(m_ZachVisionSubsystem, m_driveSubsystem));
+
+    ampHandoff.whileTrue(new AmpHandoff(m_intakeSubsystem, m_shooterSubsystem, m_climbSubsystem));
+
+    subwoofShoot.onTrue(new SubwoofShoot(m_shooterSubsystem, m_intakeSubsystem));
+    subwoofShoot.onFalse(new ParallelCommandGroup(new AdvanceNote(m_shooterSubsystem), new Vomit(m_intakeSubsystem)).withTimeout(2.5).andThen(new InstantCommand(() -> m_shooterSubsystem.stopShooter())));
+
+    //runShootAnglePID.onTrue(new IntakeAnglePID(m_intakeSubsystem, () -> SmartDashboard.getNumber("IntakeAnglePID", 0)));
+    advanceToShooter.whileTrue(new AdvanceNote(m_shooterSubsystem).withTimeout(0.1));
+    handoff.toggleOnTrue(new Handoff(m_intakeSubsystem, m_shooterSubsystem));
+    //smartShooter.whileTrue(new SmartShoot(m_shooterSubsystem, m_aVisionSubsystem));
+    smartShooter.whileTrue(new SmartShoot(m_shooterSubsystem, m_aVisionSubsystem));
+    shooterAngleUp.whileTrue(new AngleShooterUp(m_shooterSubsystem));
+    shooterAngleDown.whileTrue(new AngleShooterDown(m_shooterSubsystem));
+    //runShooter.whileTrue(new SmarterShoot(m_shooterSubsystem, m_aVisionSubsystem));
+    //ampAngle.onTrue(new AngleShooterPID(m_shooterSubsystem, () -> 58.2));
+    ampShoot.onTrue(new AmpShoot(m_intakeSubsystem, m_shooterSubsystem, m_climbSubsystem));
+    baseShooter.whileTrue(new BaseShooter(m_shooterSubsystem, m_intakeSubsystem));
+
+    
+
+    //intakeAngleUp.whileTrue(new AngleIntakeUp(m_intakeSubsystem));
+    //intakeAngleDown.whileTrue(new AngleIntakeDown(m_intakeSubsystem));
+
+    intakeAngleDown.onTrue(new IntakeAnglePID(m_intakeSubsystem, () -> 190));
+    intakeAngleMid.onTrue(new IntakeAnglePID(m_intakeSubsystem, () -> 80));
+    intakeAngleUp.onTrue(new IntakeAnglePID(m_intakeSubsystem, () -> 0));
+
+    //intake.toggleOnTrue(new Intake(m_intakeSubsystem).andThen(new Handoff(m_intakeSubsystem, m_shooterSubsystem)));
+
+    vomit.whileTrue(new Vomit(m_intakeSubsystem));   
+
+    retreat.whileTrue(new RetreatNote(m_shooterSubsystem));*/
   }
 
+    
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
-  }
+    return m_chooser.getSelected();
+}
 }

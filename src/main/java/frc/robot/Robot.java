@@ -4,28 +4,56 @@
 
 package frc.robot;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.VideoSource;
+import edu.wpi.first.net.PortForwarder;
+import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
+
 /**
- * The methods in this class are called automatically corresponding to each mode, as described in
- * the TimedRobot documentation. If you change the name of this class or the package after creating
- * this project, you must also update the Main.java file in the project.
+ * The VM is configured to automatically run this class, and to call the functions corresponding to
+ * each mode, as described in the TimedRobot documentation. If you change the name of this class or
+ * the package after creating this project, you must also update the build.gradle file in the
+ * project.
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
-  private final RobotContainer m_robotContainer;
+  private RobotContainer m_robotContainer;
 
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
-  public Robot() {
+  @Override
+  public void robotInit() {
+    
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
+    // autonomous chooser on the dashboard
     m_robotContainer = new RobotContainer();
+    UsbCamera vid = CameraServer.startAutomaticCapture();
+    vid.setVideoMode(PixelFormat.kMJPEG, 176, 144, 30);
+      // 320, 240
+    SmartDashboard.putNumber("turn setpoint", 0);
+    SmartDashboard.putString("AutoCSVInput", "");
+    SmartDashboard.putBoolean("Validate Auto Input", false);
+    SmartDashboard.putNumber("IntakeAnglePID", 0);
+    SmartDashboard.putNumber("DistanceToShoot", 0);
+    SmartDashboard.putNumber("IntakeAngle1", 0);
+    SmartDashboard.putNumber("IntakeAngle2", 80);
+    SmartDashboard.putNumber("IntakeVomit", -1);
+    SmartDashboard.putNumber("AutoWaitTime", 0);
+    //SmartDashboard.putNumber("AmpScoreClimbTime", 1);
+    for (int port = 5800; port <= 5807; port++) {
+            PortForwarder.add(port, "limelight.local", port);
+        }
+
+    
   }
 
   /**
@@ -42,6 +70,9 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    if(SmartDashboard.getBoolean("Validate Auto Input", false)) {
+      //StringParsing.verifyInput(StringParsing.parsePointList(SmartDashboard.getString("AutoCSVInput", "")));
+    }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -54,8 +85,8 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
