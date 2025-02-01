@@ -60,7 +60,7 @@ public class DriveSubsystem extends SubsystemBase {
     backRightEncoder = backRightMotor.getEncoder();
 
     leftThroughBoreEncoder = new Encoder(DigitalIOID.leftDriveEncoder1, DigitalIOID.leftDriveEncoder2);
-    rightThroughBoreEncoder = new Encoder(DigitalIOID.rightDriveEncoder1, DigitalIOID.rightDriveEncoder2); 
+   rightThroughBoreEncoder = new Encoder(DigitalIOID.rightDriveEncoder1, DigitalIOID.rightDriveEncoder2); 
 
     leftThroughBoreEncoder.setDistancePerPulse(OdometryConsts.wheelCircumfrenceMeters / 2048);
     rightThroughBoreEncoder.setDistancePerPulse(OdometryConsts.wheelCircumfrenceMeters / 2048);

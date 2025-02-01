@@ -25,25 +25,15 @@ public final class Constants {
 		public static final int backLeft = 11;
 		public static final int backRight = 13;
 
-		public static final int intakeRoller = 3;
-		public static final int intakePivot = 4;
 
-		public static final int leftShooter = 7;
-		public static final int rightShooter = 8;
-		public static final int shootAngle = 10;
-		public static final int leftShooterAdvance = 6;
-		public static final int rightShooterAdvance = 9;
-
-		public static final int leftClimb = 5;
-		//public static final int rightClimb = 11;
-	}
+		}
 
 	public static class DigitalIOID {
 		public static final int leftDriveEncoder1 = 2;
 		public static final int leftDriveEncoder2 = 3;
 
-		//public static final int rightDriveEncoder1 = 0;
-		//public static final int rightDriveEncoder2 = 1;
+		public static final int rightDriveEncoder1 = 0;
+		public static final int rightDriveEncoder2 = 1;
 
 		public static final int shooterLimitSwitch = 6;
 
